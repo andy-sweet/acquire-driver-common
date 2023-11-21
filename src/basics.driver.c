@@ -1,11 +1,14 @@
 #include "device/kit/driver.h"
 #include "device/kit/camera.h"
 #include "device/kit/storage.h"
+#include "device/kit/filter.h"
+#include "device/hal/filter.h"
 #include "identifiers.h"
 #include "logger.h"
 
 #include "simcams/simulated.camera.h"
 #include "storage/basic.storage.h"
+#include "filters/basic.filter.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +45,7 @@ basic_device_kind_to_string(enum BasicDeviceKind kind)
         CASE(BasicDevice_Storage_Tiff);
         CASE(BasicDevice_Storage_Trash);
         CASE(BasicDevice_Storage_SideBySideTiffJson);
+        CASE(BasicDevice_Filter_FrameAverage);
         CASE(BasicDeviceKindCount);
 #undef CASE
         default:
@@ -90,6 +94,7 @@ basic_device_describe(const struct Driver* driver,
         XXX(Storage,Tiff,"tiff"),
         XXX(Storage,Trash,"trash"),
         XXX(Storage,SideBySideTiffJson,"tiff-json"),
+        XXX(Filter,FrameAverage,"frame_average"),
     };
     // clang-format on
 #undef XXX
@@ -125,6 +130,12 @@ basic_device_open(struct Driver* driver,
             *out = &storage->device;
             break;
         }
+        case BasicDevice_Filter_FrameAverage: {
+            struct Filter* filter = 0;
+            CHECK(filter = basics_make_filters(device_id));
+            *out = &filter->device;
+            break;
+        }
         default:
             LOGE("Invalid parameter `device_id`. Got: %d", device_id);
             goto Error;
@@ -151,6 +162,11 @@ basic_device_close(struct Driver* driver, struct Device* in)
         case BasicDevice_Storage_SideBySideTiffJson: {
             struct Storage* writer = containerof(in, struct Storage, device);
             writer->destroy(writer);
+            return Device_Ok;
+        }
+        case BasicDevice_Filter_FrameAverage: {
+            struct Filter* filter = containerof(in, struct Filter, device);
+            filter_close(filter);
             return Device_Ok;
         }
         default: {

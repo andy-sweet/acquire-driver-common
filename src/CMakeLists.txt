@@ -4,6 +4,7 @@ endif()
 
 add_subdirectory(simcams)
 add_subdirectory(storage)
+add_subdirectory(filters)
 
 set(tgt acquire-driver-common)
 add_library(${tgt} MODULE
@@ -14,6 +15,8 @@ target_enable_simd(${tgt})
 target_link_libraries(${tgt} PRIVATE
         acquire-core-logger
         acquire-device-kit
+        acquire-device-hal
+        filters
         simcams
         storage
 )

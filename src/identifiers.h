@@ -15,6 +15,7 @@ extern "C"
         BasicDevice_Storage_Tiff,
         BasicDevice_Storage_Trash,
         BasicDevice_Storage_SideBySideTiffJson,
+        BasicDevice_Filter_FrameAverage,
         BasicDeviceKindCount
     };
 
